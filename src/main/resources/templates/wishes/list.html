@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>내 위시 리스트</title>
+    <style>
+        table { border-collapse: collapse; width: 100%; }
+        th, td { padding: 8px; border-bottom: 1px solid #ccc; text-align: center; }
+        img { width: 60px; }
+        .empty { padding: 40px; text-align: center; color: #777; }
+    </style>
+</head>
+<body>
+<h1>🛒 Wish List</h1>
+
+<div th:if="${msg}" style="color: green" th:text="${msg}"></div>
+
+<table th:if="${items} and ${!items.isEmpty()}">
+    <thead>
+    <tr><th>이미지</th><th>상품명</th><th>가격</th><th>수량</th><th></th></tr>
+    </thead>
+    <tbody>
+    <tr th:each="item : ${items}">
+        <td><img th:src="${item.imageUrl}" alt="thumbnail"/></td>
+        <td th:text="${item.name}"></td>
+        <td th:text="${#numbers.formatInteger(item.price, 3, 'COMMA')}"></td>
+        <td th:text="${item.quantity}"></td>
+        <td>
+            <form th:action="@{|/wishes/${item.productId}/delete|}" method="post">
+                <button type="submit">🗑️</button>
+            </form>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+<div th:if="${items.isEmpty()}" class="empty">
+    아직 담긴 상품이 없습니다 😥
+</div>
+
+<p><a th:href="@{/products}">← 상품 목록으로</a></p>
+</body>
+</html>
