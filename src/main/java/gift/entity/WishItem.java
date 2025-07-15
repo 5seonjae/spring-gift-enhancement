@@ -1,49 +1,62 @@
 package gift.entity;
 
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "wish_items")
 public class WishItem {
 
-    private final Long memberId;
-    private final Long productId;
-    private final String productName;
-    private final int price;
-    private final String imageUrl;
-    private final int quantity;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    public WishItem(Long memberId,
-                    Long productId,
-                    String productName,
-                    int price,
-                    String imageUrl,
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "member_id")
+    private Member member;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "product_id")
+    private Product product;
+
+    @Column(nullable = false)
+    private int quantity;
+
+    public WishItem() {
+    }
+
+    public WishItem(Long id,
+                    Member member,
+                    Product product,
                     int quantity) {
-        this.memberId = memberId;
-        this.productId = productId;
-        this.productName = productName;
-        this.price = price;
-        this.imageUrl = imageUrl;
+        this.id = id;
+        this.member = member;
+        this.product = product;
         this.quantity = quantity;
     }
 
-    public Long getMemberId() {
-        return memberId;
+    public WishItem(Member member,
+                    Product product,
+                    int quantity) {
+        this(null, member, product, quantity);
     }
 
-    public Long getProductId() {
-        return productId;
+    public Long getId() {
+        return id;
     }
 
-    public String getProductName() {
-        return productName;
+    public Member getMember() {
+        return member;
     }
 
-    public int getPrice() {
-        return price;
-    }
-
-    public String getImageUrl() {
-        return imageUrl;
+    public Product getProduct() {
+        return product;
     }
 
     public int getQuantity() {
         return quantity;
+    }
+
+    public void addQuantity(Integer quantity) {
+        this.quantity += quantity;
     }
 }

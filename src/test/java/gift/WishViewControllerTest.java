@@ -1,6 +1,7 @@
 package gift;
 
 import gift.auth.LoginMemberArgumentResolver;
+import gift.dto.api.WishRequestDto;
 import gift.entity.Member;
 import gift.entity.Product;
 import gift.exception.InvalidAuthorizationHeaderException;
@@ -8,6 +9,7 @@ import gift.exception.MissingAuthorizationHeaderException;
 import gift.repository.MemberRepository;
 import gift.repository.ProductRepository;
 import gift.repository.WishRepository;
+import gift.service.WishService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -44,6 +46,9 @@ public class WishViewControllerTest {
 
     @Autowired
     private WishRepository wishRepository;
+
+    @Autowired
+    private WishService wishService;
 
     @MockitoBean
     private LoginMemberArgumentResolver loginMemberArgumentResolver;
@@ -128,7 +133,7 @@ public class WishViewControllerTest {
     void list_withItem_ok() throws Exception {
         Product p = productRepository.save(
             new Product("초콜릿", 1000, "https://image.com/choco.png"));
-        wishRepository.updateOrInsertWishItem(member.getId(), p.getId(), 1);
+        wishService.addWishItemForMember(member, new WishRequestDto(p.getId(), 1));
 
         mockMvc.perform(get("/wishes")
                 .header("Authorization", "Bearer dummy"))
@@ -165,8 +170,8 @@ public class WishViewControllerTest {
         Product p2 = productRepository.save(
             new Product("캔디", 500, "https://image.com/candy.png"));
 
-        wishRepository.updateOrInsertWishItem(member.getId(), p1.getId(), 1);
-        wishRepository.updateOrInsertWishItem(member.getId(), p2.getId(), 2);
+        wishService.addWishItemForMember(member, new WishRequestDto(p1.getId(), 1));
+        wishService.addWishItemForMember(member, new WishRequestDto(p2.getId(), 2));
 
         // when & then
         mockMvc.perform(get("/wishes")
@@ -213,7 +218,7 @@ public class WishViewControllerTest {
     void delete_ok_redirect() throws Exception {
         Product p = productRepository.save(
             new Product("사탕", 500, "https://image.com/candy.png"));
-        wishRepository.updateOrInsertWishItem(member.getId(), p.getId(), 1);
+        wishService.addWishItemForMember(member, new WishRequestDto(p.getId(), 1));
 
         mockMvc.perform(post("/wishes/{productId}/delete", p.getId())
                 .header("Authorization", "Bearer dummy"))

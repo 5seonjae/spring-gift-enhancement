@@ -2,7 +2,6 @@ package gift.repository;
 
 import gift.entity.ApprovedProduct;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 
 @Repository

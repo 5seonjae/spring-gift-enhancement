@@ -49,7 +49,7 @@ public class ProductService {
 
         // '카카오' 문구 검증
         verifyKakaoNameIsApproved(updated.getName());
-        repository.update(updated);
+        repository.save(updated);
         return updated;  // 또는 existing → 필요에 따라 선택 가능
     }
 
@@ -57,7 +57,7 @@ public class ProductService {
         if (repository.findById(id).isEmpty()) {
             throw new NoSuchElementException("상품을 찾을 수 없습니다.");
         }
-        repository.delete(id);
+        repository.deleteById(id);
     }
 
     // "카카오" 문구 검증 로직 공통 메서드

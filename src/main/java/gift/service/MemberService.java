@@ -22,7 +22,7 @@ public class MemberService {
     // 회원 등록
     public String registerMember(MemberRegisterRequestDto requestDto) {
         // 이메일 중복 검사
-        if (memberRepository.existByEmail(requestDto.getEmail())) {
+        if (memberRepository.existsByEmail(requestDto.getEmail())) {
             throw new DuplicateKeyException("이미 사용 중인 이메일입니다.");
         }
 
@@ -48,6 +48,6 @@ public class MemberService {
         Member member = memberRepository.findByEmail(email)
             .orElseThrow(() -> new InvalidCredentialsException("이메일 또는 비밀번호가 올바르지 않습니다."));
 
-        return memberRepository.isAdminMember(member);
+        return member.getIsAdmin();
     }
 }
