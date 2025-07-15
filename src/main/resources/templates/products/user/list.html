@@ -34,13 +34,17 @@
       <td><a th:href="@{'/products/' + ${product.id}}">상세보기</a></td>
       <td class="actions">
         <!-- 🆕 Wish 추가 폼 -->
-        <form th:action="@{|/wishes/${product.id}|}" method="post" style="display:inline">
+        <form th:action="@{'/wishes/' + ${product.id}}" method="post" style="display:inline">
           <button type="submit">🤍 찜</button>
         </form>
       </td>
     </tr>
     </tbody>
   </table>
+</div>
+
+<div class="button-group">
+  <a th:href="@{/wishes}" class="button">← 찜 목록으로</a>
 </div>
 
 </body>
