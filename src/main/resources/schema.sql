@@ -1,7 +1,7 @@
 CREATE TABLE products
 (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    name VARCHAR(255) NOT NULL,
+    name VARCHAR(15) NOT NULL,
     price INT NOT NULL,
     image_url VARCHAR(255) NOT NULL
 );
@@ -16,7 +16,7 @@ CREATE TABLE approved_products
 CREATE TABLE members
 (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    email VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
     is_admin BOOLEAN NOT NULL DEFAULT FALSE
 );
