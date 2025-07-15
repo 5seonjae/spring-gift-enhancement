@@ -497,7 +497,7 @@ public class ProductControllerTest {
 
         var dto = new ProductUpdateRequestDto(
             "다크 초콜릿",
-            -1000,
+            1500,
             ""
         );
 
