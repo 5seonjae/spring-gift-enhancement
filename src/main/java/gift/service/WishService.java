@@ -3,12 +3,14 @@ package gift.service;
 import gift.dto.api.WishRequestDto;
 import gift.dto.api.WishResponseDto;
 import gift.entity.Member;
+import gift.entity.Product;
 import gift.entity.WishItem;
 import gift.exception.InvalidMemberException;
 import gift.repository.ProductRepository;
 import gift.repository.WishRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.Objects;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -34,15 +36,17 @@ public class WishService {
 
     public void addWishItemForMember(Member member, WishRequestDto wishRequestDto) {
         validateMember(member);
-        if (productRepository.findById(wishRequestDto.productId()).isEmpty()) {
-            throw new NoSuchElementException("상품을 찾을 수 없습니다.");
-        }
 
-        wishRepository.updateOrInsertWishItem(
-            member.getId(),
-            wishRequestDto.productId(),
-            wishRequestDto.quantity()
-        );
+        Product product = productRepository.findById(wishRequestDto.productId()).orElseThrow(
+                () -> new NoSuchElementException("상품을 찾을 수 없습니다."));
+
+        wishRepository.findAllByMemberId(member.getId()).stream()
+                .filter(w -> Objects.equals(w.getProduct().getId(), wishRequestDto.productId()))
+                .findFirst()
+                .ifPresentOrElse(
+                        w -> { w.addQuantity(wishRequestDto.quantity()); },
+                        () -> { wishRepository.save(new WishItem(member, product, wishRequestDto.quantity())); }
+                );
     }
 
     public void removeWishItemForMember(Member member, Long productId) {
@@ -51,7 +55,7 @@ public class WishService {
             throw new NoSuchElementException("상품을 찾을 수 없습니다.");
         }
 
-        int rows = wishRepository.delete(member.getId(), productId);
+        int rows = wishRepository.deleteByMemberIdAndProductId(member.getId(), productId);
 
         if (rows == 0) {                               // ← 위시 항목 없었음
             throw new NoSuchElementException("위시 목록에 없는 상품입니다.");

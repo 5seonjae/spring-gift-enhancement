@@ -1,18 +1,31 @@
 package gift.entity;
 
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import jakarta.persistence.*;
 
-@JsonPropertyOrder({"id", "name", "price", "imageUrl"})
+import java.util.ArrayList;
+import java.util.List;
+
+@Entity
+@Table(name = "products")
 public class Product {
 
-    // DB에서 자동 생성되는 ID는 등록 시점에는 null일 수 있으므로 Long 사용
-    // 또한 Product는 불변 객체이므로 생성자에서만 값을 설정할 수 있도록 설계
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(nullable = false, length = 15)
     private String name;
+
+    @Column(nullable = false)
     private int price;
+
+    @Column(name = "image_url", nullable = false)
     private String imageUrl;
 
-    public Product() {
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<WishItem> wishItems = new ArrayList<>();
+
+    protected Product() {
     }
 
     /**
