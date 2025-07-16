@@ -14,8 +14,10 @@ import org.springframework.stereotype.Service;
 
 import java.util.Objects;
 import java.util.NoSuchElementException;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional
 public class WishService {
 
     private final WishRepository wishRepository;
