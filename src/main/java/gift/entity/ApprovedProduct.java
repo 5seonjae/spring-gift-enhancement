@@ -18,7 +18,7 @@ public class ApprovedProduct {
     @Column(nullable = false, unique = true)
     private String name;
 
-    public ApprovedProduct() {
+    protected ApprovedProduct() {
     }
 
     public ApprovedProduct(String name) {

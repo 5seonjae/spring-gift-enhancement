@@ -21,7 +21,7 @@ public class WishItem {
     @Column(nullable = false)
     private int quantity;
 
-    public WishItem() {
+    protected WishItem() {
     }
 
     public WishItem(Long id,
