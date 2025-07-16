@@ -15,12 +15,12 @@
 
 <div th:if="${msg}" style="color: green" th:text="${msg}"></div>
 
-<table th:if="${items} and ${!items.isEmpty()}">
+<table th:if="${wishPage.content} and ${!wishPage.content.isEmpty()}">
     <thead>
     <tr><th>이미지</th><th>상품명</th><th>가격</th><th>수량</th><th></th></tr>
     </thead>
     <tbody>
-    <tr th:each="item : ${items}">
+    <tr th:each="item : ${wishPage.content}">
         <td><img th:src="${item.imageUrl}" alt="thumbnail"/></td>
         <td th:text="${item.name}"></td>
         <td th:text="${#numbers.formatInteger(item.price, 3, 'COMMA')}"></td>
@@ -34,7 +34,36 @@
     </tbody>
 </table>
 
-<div th:if="${items.isEmpty()}" class="empty">
+<nav class="pagination">
+    <!-- Prev -->
+    <a class="page-link"
+       th:href="${wishPage.first}
+             ? null
+             : @{/wishes(page=${wishPage.number-1},size=${wishPage.size})}"
+       th:classappend="${wishPage.first} ? ' disabled'">
+        Prev
+    </a>
+
+    <!-- 페이지 번호 -->
+    <a th:each="i : ${#numbers.sequence(0, wishPage.totalPages - 1)}"
+       th:href="@{/wishes(page=${i},size=${wishPage.size})}"
+       th:classappend="${wishPage.number == i} ? 'active'"
+       class="page-link"
+       th:text="${i + 1}">
+        1
+    </a>
+
+    <!-- Next -->
+    <a class="page-link"
+       th:href="${wishPage.last}
+             ? null
+             : @{/wishes(page=${wishPage.number+1},size=${wishPage.size})}"
+       th:classappend="${wishPage.last} ? ' disabled'">
+        Next
+    </a>
+</nav>
+
+<div th:if="${wishPage.content.isEmpty()}" class="empty">
     아직 담긴 상품이 없습니다 😥
 </div>
 
