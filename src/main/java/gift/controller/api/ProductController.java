@@ -1,10 +1,14 @@
 package gift.controller.api;
 
+import static org.springframework.data.domain.Sort.Direction.DESC;
+
 import gift.dto.api.ProductCreateRequestDto;
 import gift.dto.api.ProductUpdateRequestDto;
 import gift.entity.Product;
 import gift.service.ProductService;
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -36,8 +40,10 @@ public class ProductController {
 
     // 상품 전체 조회
     @GetMapping
-    public ResponseEntity<List<Product>> getAllProducts() {
-        List<Product> products = productService.getAllProducts();
+    public ResponseEntity<Page<Product>> getAllProducts(
+        @PageableDefault(size = 10, sort = "id", direction = DESC) Pageable pageable
+    ) {
+        Page<Product> products = productService.getAllProducts(pageable);
         return ResponseEntity.ok(products);  // 200 OK + JSON 배열
     }
 

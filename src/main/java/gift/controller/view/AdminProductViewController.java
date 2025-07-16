@@ -1,11 +1,16 @@
 package gift.controller.view;
 
+import static org.springframework.data.domain.Sort.Direction.DESC;
+
 import gift.dto.api.ProductUpdateRequestDto;
 import gift.dto.view.ProductViewRequestDto;
 import gift.entity.Product;
 import gift.service.ProductService;
 import jakarta.validation.Valid;
 import java.util.NoSuchElementException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -28,16 +33,20 @@ public class AdminProductViewController {
 
     // 상품 목록 화면
     @GetMapping
-    public String getProducts(Model model) {
-        model.addAttribute("products", productService.getAllProducts());
-        return "products/admin/list";     // templates/product/list.html
+    public String getProducts(
+        Model model,
+        @PageableDefault(size = 5, sort = "id", direction = DESC) Pageable pageable
+    ) {
+        Page<Product> page = productService.getAllProducts(pageable);
+        model.addAttribute("page", page);
+        return "products/admin/list";
     }
 
     // 상품 등록 폼 화면
     @GetMapping("/new")
     public String showCreateForm(Model model) {
         model.addAttribute("productRequest", new ProductViewRequestDto());
-        return "products/admin/form";     // templates/product/admin/form.html
+        return "products/admin/form";
     }
 
     // 상품 등록 요청 처리
@@ -131,3 +140,4 @@ public class AdminProductViewController {
         return "redirect:/admin/products"; // 삭제 후 목록 페이지로 이동
     }
 }
+
