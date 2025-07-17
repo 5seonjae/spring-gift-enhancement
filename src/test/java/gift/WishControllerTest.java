@@ -1,6 +1,8 @@
 package gift;
 
+import gift.auth.LoginMember;
 import gift.auth.LoginMemberArgumentResolver;
+import gift.config.WebConfig;
 import gift.dto.api.WishRequestDto;
 import gift.entity.Member;
 import gift.entity.Product;
@@ -15,6 +17,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.core.MethodParameter;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -57,7 +61,14 @@ public class WishControllerTest {
         member = memberRepository.save(new Member("test@example.com", "pwd1234"));
 
         // (2) ArgumentResolver 목 스텁
-        given(loginMemberArgumentResolver.supportsParameter(any())).willReturn(true);
+        given(loginMemberArgumentResolver.supportsParameter(any(MethodParameter.class)))
+                .willAnswer(invocation -> {
+                    MethodParameter param = invocation.getArgument(0);
+                    // 오직 @LoginMember가 붙은 Member 파라미터만 true
+                    return param.hasParameterAnnotation(LoginMember.class)
+                            && Member.class.equals(param.getParameterType());
+                });
+
         given(loginMemberArgumentResolver.resolveArgument(any(), any(), any(), any()))
             .willAnswer(invocation -> {
                 NativeWebRequest req = invocation.getArgument(2);
@@ -86,55 +97,86 @@ public class WishControllerTest {
 
         // when & then
         mockMvc.perform(get("/api/wishes")
-                .header("Authorization", "Bearer dummy-token")  // resolver가 mock이면 토큰 내용 무관
-                .accept(MediaType.APPLICATION_JSON)
-            )
-            .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-            .andExpect(jsonPath("$", hasSize(1)))
-            .andExpect(jsonPath("$[0].productId").value(saved.getId()))
-            .andExpect(jsonPath("$[0].name").value("초콜릿"))
-            .andExpect(jsonPath("$[0].price").value(1000))
-            .andExpect(jsonPath("$[0].imageUrl").value("https://image.com/choco.png"))
-            .andExpect(jsonPath("$[0].quantity").value(2));
+                        .header("Authorization", "Bearer dummy-token")  // resolver가 mock이면 토큰 내용 무관
+                        .param("page", "0")
+                        .param("size", "5")
+                        .param("sort", "id,desc")
+                        .accept(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                // 실제 리스트 값 검증
+                .andExpect(jsonPath("$.content", hasSize(1)))
+                .andExpect(jsonPath("$.content[0].productId").value(saved.getId()))
+                .andExpect(jsonPath("$.content[0].name").value("초콜릿"))
+                .andExpect(jsonPath("$.content[0].price").value(1000))
+                .andExpect(jsonPath("$.content[0].imageUrl").value("https://image.com/choco.png"))
+                .andExpect(jsonPath("$.content[0].quantity").value(2));
     }
 
     @Test
     @DisplayName("GET /api/wishes – 아이템 없으면 빈 배열")
     void list_empty_shouldReturnEmptyArray() throws Exception {
         mockMvc.perform(get("/api/wishes")
-                .header("Authorization", "Bearer dummy-token"))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$").isArray())
-            .andExpect(jsonPath("$").isEmpty());
+                        .header("Authorization", "Bearer dummy-token")
+                        .param("page", "0")
+                        .param("size", "5")
+                        .param("sort", "id,desc")
+                        .accept(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isOk())
+                // 페이징된 결과의 content 배열이 비어 있는지 확인
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.content").isEmpty())
+                // 페이징 메타데이터 검증
+                .andExpect(jsonPath("$.totalElements").value(0))
+                .andExpect(jsonPath("$.totalPages").value(0))
+                .andExpect(jsonPath("$.number").value(0))
+                .andExpect(jsonPath("$.size").value(5))
+                .andExpect(jsonPath("$.empty").value(true));
     }
 
     @Test
-    @DisplayName("GET /api/wishes – 여러 아이템 조회")
-    void list_multipleItems_shouldReturnAll() throws Exception {
-        var sampleProduct1 = new Product("초콜릿", 1000, "https://image.com/choco.png");
-        var sampleProduct2 = new Product("사탕", 500, "https://image.com/candy.png");
-        Product savedSampleProduct1 = productRepository.save(sampleProduct1);
-        Product savedSampleProduct2 = productRepository.save(sampleProduct2);
-        var item1 = new WishRequestDto(savedSampleProduct1.getId(), 1);
-        var item2 = new WishRequestDto(savedSampleProduct2.getId(), 3);
-        wishService.addWishItemForMember(member, item1);
-        wishService.addWishItemForMember(member, item2);
+    @DisplayName("GET /api/wishes – 여러 아이템 조회 (페이징)")
+    void list_multipleItems_withPaging_shouldReturnAll() throws Exception {
+        // given
+        var p1 = productRepository.save(new Product("초콜릿", 1000, "https://image.com/choco.png"));
+        var p2 = productRepository.save(new Product("사탕",   500,  "https://image.com/candy.png"));
+        wishService.addWishItemForMember(member, new WishRequestDto(p1.getId(), 1));
+        wishService.addWishItemForMember(member, new WishRequestDto(p2.getId(), 3));
 
+        // when & then
         mockMvc.perform(get("/api/wishes")
-                .header("Authorization", "Bearer dummy-token"))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$", hasSize(2)))
-            .andExpect(jsonPath("$[0].productId").value(savedSampleProduct1.getId()))
-            .andExpect(jsonPath("$[0].name").value("초콜릿"))
-            .andExpect(jsonPath("$[0].price").value(1000))
-            .andExpect(jsonPath("$[0].imageUrl").value("https://image.com/choco.png"))
-            .andExpect(jsonPath("$[0].quantity").value(1))
-            .andExpect(jsonPath("$[1].productId").value(savedSampleProduct2.getId()))
-            .andExpect(jsonPath("$[1].name").value("사탕"))
-            .andExpect(jsonPath("$[1].price").value(500))
-            .andExpect(jsonPath("$[1].imageUrl").value("https://image.com/candy.png"))
-            .andExpect(jsonPath("$[1].quantity").value(3));
+                        .header("Authorization", "Bearer dummy-token")
+                        .param("page", "0")
+                        .param("size", "5")
+                        .param("sort", "id,desc")
+                        .accept(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isOk())
+
+                // — 메타데이터 검증 —
+                .andExpect(jsonPath("$.totalElements").value(2))
+                .andExpect(jsonPath("$.totalPages").value(1))
+                .andExpect(jsonPath("$.number").value(0))
+                .andExpect(jsonPath("$.size").value(5))
+                .andExpect(jsonPath("$.numberOfElements").value(2))
+                .andExpect(jsonPath("$.first").value(true))
+                .andExpect(jsonPath("$.last").value(true))
+
+                // — content 리스트 검증 (id 내림차순) —
+                .andExpect(jsonPath("$.content", hasSize(2)))
+                .andExpect(jsonPath("$.content[0].productId").value(p2.getId()))
+                .andExpect(jsonPath("$.content[0].name").value("사탕"))
+                .andExpect(jsonPath("$.content[0].price").value(500))
+                .andExpect(jsonPath("$.content[0].imageUrl").value("https://image.com/candy.png"))
+                .andExpect(jsonPath("$.content[0].quantity").value(3))
+
+                .andExpect(jsonPath("$.content[1].productId").value(p1.getId()))
+                .andExpect(jsonPath("$.content[1].name").value("초콜릿"))
+                .andExpect(jsonPath("$.content[1].price").value(1000))
+                .andExpect(jsonPath("$.content[1].imageUrl").value("https://image.com/choco.png"))
+                .andExpect(jsonPath("$.content[1].quantity").value(1));
     }
 
     @Test

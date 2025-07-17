@@ -199,28 +199,29 @@ public class AdminProductViewControllerTest {
 
         // 수행 & 검증
         mockMvc.perform(get("/admin/products"))
-            .andExpect(status().isOk())
-            .andExpect(view().name("products/admin/list"))
-            .andExpect(model().attributeExists("products"))
-            .andExpect(model().attribute("products", hasSize(2)))
-            .andExpect(model().attribute("products",
-                contains(
-                    hasProperty("name", is("초콜릿")),
-                    hasProperty("name", is("캔디"))
-                )
-            ))
-            .andExpect(model().attribute("products",
-                contains(
-                    hasProperty("price", is(1000)),
-                    hasProperty("price", is(500))
-                )
-            ))
-            .andExpect(model().attribute("products",
-                contains(
-                    hasProperty("imageUrl", is("https://image.com/choco.jpg")),
-                    hasProperty("imageUrl", is("https://image.com/candy.jpg"))
-                )
-            ))
+                .andExpect(status().isOk())
+                .andExpect(view().name("products/admin/list"))
+                .andExpect(model().attributeExists("page"))
+                .andExpect(model().attribute("page",
+                        hasProperty("content", hasSize(2))))
+                .andExpect(model().attribute("page",
+                        hasProperty("content", contains(
+                                hasProperty("name", is("캔디")),
+                                hasProperty("name", is("초콜릿"))
+                        ))
+                ))
+                .andExpect(model().attribute("page",
+                        hasProperty("content", contains(
+                                hasProperty("price", is(500)),
+                                hasProperty("price", is(1000))
+                        ))
+                ))
+                .andExpect(model().attribute("page",
+                        hasProperty("content", contains(
+                                hasProperty("imageUrl", is("https://image.com/candy.jpg")),
+                                hasProperty("imageUrl", is("https://image.com/choco.jpg"))
+                        ))
+                ))
         ;
     }
 

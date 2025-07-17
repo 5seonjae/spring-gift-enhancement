@@ -234,15 +234,18 @@ public class ProductControllerTest {
 
         // 수행 & 검증
         mockMvc.perform(get("/api/products")
-                .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk())
-            // 배열 길이 검증
-            .andExpect(jsonPath("$.length()").value(2))
-            // 각 요소 필드 검증
-            .andExpect(jsonPath("$[0].name").value("초콜릿"))
-            .andExpect(jsonPath("$[0].price").value(1000))
-            .andExpect(jsonPath("$[1].name").value("캔디"))
-            .andExpect(jsonPath("$[1].price").value(500));
+                        .param("sort", "id,desc")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                // 배열 길이 검증
+                .andExpect(jsonPath("$.content.length()").value(2))
+                // 각 요소 필드 검증
+                .andExpect(jsonPath("$.content[0].name").value("캔디"))
+                .andExpect(jsonPath("$.content[0].price").value(500))
+                .andExpect(jsonPath("$.content[0].imageUrl").value("https://image.com/candy.jpg"))
+                .andExpect(jsonPath("$.content[1].name").value("초콜릿"))
+                .andExpect(jsonPath("$.content[1].price").value(1000))
+                .andExpect(jsonPath("$.content[1].imageUrl").value("https://image.com/choco.jpg"));
     }
 
     @Test

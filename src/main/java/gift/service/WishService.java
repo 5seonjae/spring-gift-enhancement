@@ -8,13 +8,16 @@ import gift.entity.WishItem;
 import gift.exception.InvalidMemberException;
 import gift.repository.ProductRepository;
 import gift.repository.WishRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.Objects;
-import java.util.List;
 import java.util.NoSuchElementException;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional
 public class WishService {
 
     private final WishRepository wishRepository;
@@ -26,27 +29,26 @@ public class WishService {
         this.productRepository = productRepository;
     }
 
-    public List<WishResponseDto> getWishListForMember(Member member) {
+    public Page<WishResponseDto> getWishListForMember(Member member, Pageable pageable) {
         validateMember(member);
-        List<WishItem> items = wishRepository.findAllByMemberId(member.getId());
-        return items.stream()
-            .map(WishResponseDto::of)
-            .toList();
+        return wishRepository
+            .findAllByMemberId(member.getId(), pageable)
+            .map(WishResponseDto::of);
     }
 
     public void addWishItemForMember(Member member, WishRequestDto wishRequestDto) {
         validateMember(member);
 
         Product product = productRepository.findById(wishRequestDto.productId()).orElseThrow(
-                () -> new NoSuchElementException("상품을 찾을 수 없습니다."));
+            () -> new NoSuchElementException("상품을 찾을 수 없습니다."));
 
         wishRepository.findAllByMemberId(member.getId()).stream()
-                .filter(w -> Objects.equals(w.getProduct().getId(), wishRequestDto.productId()))
-                .findFirst()
-                .ifPresentOrElse(
-                        w -> { w.addQuantity(wishRequestDto.quantity()); },
-                        () -> { wishRepository.save(new WishItem(member, product, wishRequestDto.quantity())); }
-                );
+            .filter(w -> Objects.equals(w.getProduct().getId(), wishRequestDto.productId()))
+            .findFirst()
+            .ifPresentOrElse(
+                w -> { w.addQuantity(wishRequestDto.quantity()); },
+                () -> { wishRepository.save(new WishItem(member, product, wishRequestDto.quantity())); }
+            );
     }
 
     public void removeWishItemForMember(Member member, Long productId) {

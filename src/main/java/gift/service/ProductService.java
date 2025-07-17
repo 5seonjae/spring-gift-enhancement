@@ -6,6 +6,8 @@ import gift.entity.Product;
 import gift.repository.ApprovedProductRepository;
 import gift.repository.ProductRepository;
 import java.util.NoSuchElementException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -28,8 +30,8 @@ public class ProductService {
         return repository.save(product);
     }
 
-    public List<Product> getAllProducts() {
-        return repository.findAll();
+    public Page<Product> getAllProducts(Pageable pageable) {
+        return repository.findAll(pageable);
     }
 
     public Product getProductById(long id) {

@@ -30,7 +30,7 @@
     </tr>
     </thead>
     <tbody>
-    <tr th:each="product : ${products}">
+    <tr th:each="product : ${page.content}">
       <td th:text="${product.id}">1</td>
       <td th:text="${product.name}">상품명</td>
       <td th:text="${product.price}"></td>
@@ -48,6 +48,35 @@
     </tr>
     </tbody>
   </table>
+
+  <nav class="pagination">
+    <!-- Prev -->
+    <a class="page-link"
+       th:href="${page.first}
+             ? null
+             : @{/admin/products(page=${page.number-1},size=${page.size})}"
+       th:classappend="${page.first} ? ' disabled'">
+      Prev
+    </a>
+
+    <!-- 페이지 번호 -->
+    <a th:each="i : ${#numbers.sequence(0, page.totalPages - 1)}"
+       th:href="@{/admin/products(page=${i},size=${page.size})}"
+       th:classappend="${page.number == i} ? 'active'"
+       class="page-link"
+       th:text="${i + 1}">
+      1
+    </a>
+
+    <!-- Next -->
+    <a class="page-link"
+       th:href="${page.last}
+             ? null
+             : @{/admin/products(page=${page.number+1},size=${page.size})}"
+       th:classappend="${page.last} ? ' disabled'">
+      Next
+    </a>
+  </nav>
 </div>
 
 </body>

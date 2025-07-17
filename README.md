@@ -75,3 +75,34 @@ CONSTRAINT fk_wish_product FOREIGN KEY (product_id) REFERENCES products(id)
 ```
 
 ---
+
+## 🚀 Step 2 – 페이지네이션
+
+각 리스트 조회 API에서 `page`, `size`, `sort` 파라미터로 페이징과 정렬을 제어할 수 있습니다.
+
+### 상품 목록 페이징
+
+- **엔드포인트**:  
+  `GET /products`
+- **쿼리 파라미터**:
+  - `page` (int, `0`): 페이지 인덱스 (0부터 시작)
+  - `size` (int, `5`): 한 페이지에 표시할 아이템 수
+  - `sort` (string, `id`): 정렬 기준 (`필드명`)
+  - `direction` (string, `DESC`): 정렬 방향 (`asc|desc`)
+- **예시**: 
+  - `GET /products?page=1&size=5`
+  - 페이지 인덱스와 한 페이지에 표시할 아이템 수만 노출
+
+### 위시 리스트 페이징
+
+- **엔드포인트**: `GET /wishes`
+- **쿼리 파라미터**:
+  - `page` (int, 기본 `0`)
+  - `size` (int, 기본 `5`)
+  - `sort` (string, `id`): 정렬 기준 (`필드명`)
+  - `direction` (string, `DESC`): 정렬 방향 (`asc|desc`)
+- **예시**:
+  - `GET /wishes?page=2&size=5`
+  - 페이지 인덱스와 한 페이지에 표시할 아이템 수만 노출  
+
+---
