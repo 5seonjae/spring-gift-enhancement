@@ -54,14 +54,14 @@
     <a class="page-link"
        th:href="${page.first}
              ? null
-             : @{/products(page=${page.number-1},size=${page.size})}"
+             : @{/admin/products(page=${page.number-1},size=${page.size})}"
        th:classappend="${page.first} ? ' disabled'">
       Prev
     </a>
 
     <!-- 페이지 번호 -->
     <a th:each="i : ${#numbers.sequence(0, page.totalPages - 1)}"
-       th:href="@{/products(page=${i},size=${page.size})}"
+       th:href="@{/admin/products(page=${i},size=${page.size})}"
        th:classappend="${page.number == i} ? 'active'"
        class="page-link"
        th:text="${i + 1}">
@@ -72,7 +72,7 @@
     <a class="page-link"
        th:href="${page.last}
              ? null
-             : @{/products(page=${page.number+1},size=${page.size})}"
+             : @{/admin/products(page=${page.number+1},size=${page.size})}"
        th:classappend="${page.last} ? ' disabled'">
       Next
     </a>
