@@ -41,7 +41,7 @@ public class ProductController {
     // 상품 전체 조회
     @GetMapping
     public ResponseEntity<Page<Product>> getAllProducts(
-        @PageableDefault(size = 10, sort = "id", direction = DESC) Pageable pageable
+        @PageableDefault(size = 5, sort = "id", direction = DESC) Pageable pageable
     ) {
         Page<Product> products = productService.getAllProducts(pageable);
         return ResponseEntity.ok(products);  // 200 OK + JSON 배열
