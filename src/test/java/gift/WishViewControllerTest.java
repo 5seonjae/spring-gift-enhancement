@@ -1,5 +1,6 @@
 package gift;
 
+import gift.auth.LoginMember;
 import gift.auth.LoginMemberArgumentResolver;
 import gift.dto.api.WishRequestDto;
 import gift.entity.Member;
@@ -16,6 +17,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.core.MethodParameter;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
@@ -61,7 +64,14 @@ public class WishViewControllerTest {
         member = memberRepository.save(new Member("test@example.com", "pwd1234"));
 
         // (2) ArgumentResolver 목 스텁
-        given(loginMemberArgumentResolver.supportsParameter(any())).willReturn(true);
+        given(loginMemberArgumentResolver.supportsParameter(any(MethodParameter.class)))
+                .willAnswer(invocation -> {
+                    MethodParameter param = invocation.getArgument(0);
+                    // 오직 @LoginMember가 붙은 Member 파라미터만 true
+                    return param.hasParameterAnnotation(LoginMember.class)
+                            && Member.class.equals(param.getParameterType());
+                });
+
         given(loginMemberArgumentResolver.resolveArgument(any(), any(), any(), any()))
             .willAnswer(invocation -> {
                 NativeWebRequest req = invocation.getArgument(2);
@@ -136,29 +146,41 @@ public class WishViewControllerTest {
         wishService.addWishItemForMember(member, new WishRequestDto(p.getId(), 1));
 
         mockMvc.perform(get("/wishes")
-                .header("Authorization", "Bearer dummy"))
-            .andExpect(status().isOk())
-            .andExpect(view().name("wishes/list"))
-            .andExpect(model().attribute("items",
-                contains(
-                    hasProperty("name", is("초콜릿"))
+                        .header("Authorization", "Bearer dummy")
+                        .param("page", "0")
+                        .param("size", "5")
+                        .param("sort", "id,desc")
+                        .accept(MediaType.TEXT_HTML)
                 )
-            ))
-            .andExpect(model().attribute("items",
-                contains(
-                    hasProperty("price", is(1000))
-                )
-            ))
-            .andExpect(model().attribute("items",
-                contains(
-                    hasProperty("imageUrl", is("https://image.com/choco.png"))
-                )
-            ))
-            .andExpect(model().attribute("items",
-                contains(
-                    hasProperty("quantity", is(1))
-                )
-            ));
+                .andExpect(status().isOk())
+                .andExpect(view().name("wishes/list"))
+                .andExpect(model().attributeExists("wishPage"))
+                .andExpect(model().attribute("wishPage",
+                        hasProperty("content", hasSize(1))
+                ))
+                .andExpect(model().attribute("wishPage",
+                        hasProperty("content", contains(
+                                hasProperty("name", is("초콜릿"))
+                        ))
+                ))
+                // price
+                .andExpect(model().attribute("wishPage",
+                        hasProperty("content", contains(
+                                hasProperty("price", is(1000))
+                        ))
+                ))
+                // imageUrl
+                .andExpect(model().attribute("wishPage",
+                        hasProperty("content", contains(
+                                hasProperty("imageUrl", is("https://image.com/choco.png"))
+                        ))
+                ))
+                // quantity
+                .andExpect(model().attribute("wishPage",
+                        hasProperty("content", contains(
+                                hasProperty("quantity", is(1))
+                        ))
+                ));
     }
 
     @Test
@@ -175,33 +197,45 @@ public class WishViewControllerTest {
 
         // when & then
         mockMvc.perform(get("/wishes")
-                .header("Authorization", "Bearer dummy"))
+                .header("Authorization", "Bearer dummy")
+                .param("page", "0")
+                .param("size", "5")
+                .param("sort", "id,desc")
+                .accept(MediaType.TEXT_HTML)
+            )
             .andExpect(status().isOk())
             .andExpect(view().name("wishes/list"))
-            .andExpect(model().attribute("items",
-                contains(
-                    hasProperty("name", is("초콜릿")),
-                    hasProperty("name", is("캔디"))
-                )
-            ))
-            .andExpect(model().attribute("items",
-                contains(
-                    hasProperty("price", is(1000)),
-                    hasProperty("price", is(500))
-                )
-            ))
-            .andExpect(model().attribute("items",
-                contains(
-                    hasProperty("imageUrl", is("https://image.com/choco.png")),
-                    hasProperty("imageUrl", is("https://image.com/candy.png"))
-                )
-            ))
-            .andExpect(model().attribute("items",
-                contains(
-                    hasProperty("quantity", is(1)),
-                    hasProperty("quantity", is(2))
-                )
-            ));
+                .andExpect(model().attributeExists("wishPage"))
+                .andExpect(model().attribute("wishPage",
+                        hasProperty("content", hasSize(2))
+                ))
+                .andExpect(model().attribute("wishPage",
+                        hasProperty("content", contains(
+                                hasProperty("name", is("캔디")),
+                                hasProperty("name", is("초콜릿"))
+                        ))
+                ))
+                // price
+                .andExpect(model().attribute("wishPage",
+                        hasProperty("content", contains(
+                                hasProperty("price", is(500)),
+                                hasProperty("price", is(1000))
+                        ))
+                ))
+                // imageUrl
+                .andExpect(model().attribute("wishPage",
+                        hasProperty("content", contains(
+                                hasProperty("imageUrl", is("https://image.com/candy.png")),
+                                hasProperty("imageUrl", is("https://image.com/choco.png"))
+                        ))
+                ))
+                // quantity
+                .andExpect(model().attribute("wishPage",
+                        hasProperty("content", contains(
+                                hasProperty("quantity", is(2)),
+                                hasProperty("quantity", is(1))
+                        ))
+                ));
     }
 
     @Test

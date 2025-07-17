@@ -10,6 +10,10 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 import java.util.List;
 
@@ -36,15 +40,27 @@ public class WishRepositoryTest {
         WishItem wi = new WishItem(m, p, 3);
         wishRepository.save(wi);
 
-        // when
-        List<WishItem> list = wishRepository.findAllByMemberId(m.getId());
+        // when — 페이지 크기 5, id 내림차순, 0번 페이지 조회
+        Pageable pageable = PageRequest.of(0, 5, Sort.by("id").descending());
+        Page<WishItem> page = wishRepository.findAllByMemberId(m.getId(), pageable);
 
-        // then
-        assertThat(list).hasSize(1);
-        assertThat(list.getFirst().getProduct().getName()).isEqualTo("P1");
-        assertThat(list.getFirst().getProduct().getPrice()).isEqualTo(10);
-        assertThat(list.getFirst().getProduct().getImageUrl()).isEqualTo("http://example.com/img.png");
-        assertThat(list.getFirst().getQuantity()).isEqualTo(3);
+        // then — 페이징 메타데이터 검증
+        assertThat(page.getTotalElements()).isEqualTo(1);    // 전체 아이템 수
+        assertThat(page.getTotalPages()).isEqualTo(1);       // 전체 페이지 수
+        assertThat(page.getNumber()).isZero();                       // 현재 페이지 인덱스
+        assertThat(page.getSize()).isEqualTo(5);             // 페이지 크기
+        assertThat(page.isFirst()).isTrue();
+        assertThat(page.isLast()).isTrue();
+
+        // then — 콘텐츠 검증
+        List<WishItem> content = page.getContent();
+        assertThat(content).hasSize(1);
+
+        WishItem item = content.get(0);
+        assertThat(item.getProduct().getName()).isEqualTo("P1");
+        assertThat(item.getProduct().getPrice()).isEqualTo(1000);
+        assertThat(item.getProduct().getImageUrl()).isEqualTo("http://example.com/img.png");
+        assertThat(item.getQuantity()).isEqualTo(3);
     }
 
     @Test
