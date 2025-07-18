@@ -9,7 +9,6 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-@Repository
 public interface WishRepository extends JpaRepository<WishItem, Long> {
 
     // 페이징용 메서드
