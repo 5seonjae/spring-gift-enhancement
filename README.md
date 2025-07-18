@@ -106,3 +106,53 @@ CONSTRAINT fk_wish_product FOREIGN KEY (product_id) REFERENCES products(id)
   - 페이지 인덱스와 한 페이지에 표시할 아이템 수만 노출  
 
 ---
+
+## 🚀 Step 3 – 상품 옵션
+
+### 🎯 기능 요구사항 체크리스트
+
+- [ ] **옵션 조회 API**
+  - 엔드포인트:
+    ```http
+    GET /api/products/{productId}/options
+    ```  
+  - 응답:
+    - HTTP 200
+    - `application/json`
+    - Body: 옵션 객체 배열
+      ```json
+      [
+        {
+          "id": 123,
+          "name": "기본형",
+          "quantity": 100
+        },
+        ...
+      ]
+      ```
+- [ ] **옵션 수량 차감 기능**
+  - 서비스 계층 메서드(`OptionService.subtract`)로 구현
+  - 별도의 HTTP API는 선택 사항
+  - 재고(`quantity`)가 부족할 경우 예외 발생
+- [ ] **옵션 이름 제약**
+  - 공백 포함 **1~50자**
+  - 허용 특수문자: `()`, `.`, `[`, `]`, `+`, `-`, `&`, `/`, `_`
+  - 그 외 특수문자 사용 불가
+- [ ]**옵션 수량 제약**
+  - 최소 **1개 이상**, 최대 **1억 미만**
+- [ ]**중복 옵션 이름 금지**
+  - 동일 상품 내에서 옵션 이름 중복 불허
+- [ ] **(선택) 관리자 화면에서 옵션 추가/삭제 UI 제공**
+  - Thymeleaf 템플릿(`templates/products/optionForm.html`) + 뷰 컨트롤러 구현
+
+### ⚙️ 프로그래밍 요구 사항
+- `Option` 엔티티: `id`, `name(1~50자)`, `quantity(1~1억 미만)`, `product(FK)`
+  - 동일 상품 내 옵션 이름 중복 방지를 위한 `UNIQUE (product_id, name)`
+- `OptionRepository`: `findAllByProductId`, `findByProductIdAndName` 등
+
+### 🧪 테스트
+- Repository: 저장·조회·UNIQUE 검증
+- Service: 재고 차감·부족 예외
+- Controller: GET 200 / 수량 차감 실패 400 / 재고 부족 409
+
+---
