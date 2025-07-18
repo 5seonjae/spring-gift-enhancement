@@ -4,6 +4,8 @@ import gift.entity.Product;
 import gift.repository.ProductRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.data.domain.Page;
@@ -37,9 +39,22 @@ public class ProductRepositoryTest {
         assertThat(found.getImageUrl()).isEqualTo("http://example.com/img.png");
     }
 
-    @Test
+    @ParameterizedTest(name = "[page={0}] name={1}, price={2}, url={3}")
+    @CsvSource({
+        // page, name, price, imageUrl, isFirst, hasPrevious, hasNext
+        "0, C, 3, http://exampleC.com/img.png, true,  false, true",
+        "1, B, 2, http://exampleB.com/img.png, false, true,  true",
+        "2, A, 1, http://exampleA.com/img.png, false, true,  false"
+    })
     @DisplayName("findAll: 저장된 상품 리스트를 모두 반환")
-    void findAll_shouldReturnAllSaved() {
+    void findAll_shouldReturnAllSaved(int pageIndex,
+        String expectedName,
+        int expectedPrice,
+        String expectedImageUrl,
+        boolean expectedFirst,
+        boolean expectedPrev,
+        boolean expectedNext
+    ) {
         // given — 기존 데이터 삭제 후 3개 상품 저장
         productRepository.deleteAll();
         productRepository.saveAll(List.of(
@@ -50,64 +65,33 @@ public class ProductRepositoryTest {
 
         // when — 페이지 크기 1, id 내림차순 정렬
         Pageable pageable = PageRequest.of(
-                0,                             // page number
-                1,                                        // page size
-                Sort.by("id").descending()      // sort by id desc
+            pageIndex,                             // page number
+            1,                                        // page size
+            Sort.by("id").descending()      // sort by id desc
         );
-        // 첫 번째 페이지 조회
-        Page<Product> page0 = productRepository.findAll(pageable);
 
-        // then — 메타데이터 검증
-        assertThat(page0.getTotalElements()).isEqualTo(3);     // 전체 요소 수
-        assertThat(page0.getTotalPages()).isEqualTo(3);        // 전체 페이지 수
-        assertThat(page0.getNumber()).isZero();                        // 현재 페이지 인덱스
-        assertThat(page0.getSize()).isEqualTo(1);              // 페이지 크기
+        Page<Product> page = productRepository.findAll(pageable);
 
-        // then — 첫 번째 페이지 콘텐츠 검증
-        assertThat(page0.getContent())
-                .extracting(Product::getName)
-                .containsExactly("C");
-        assertThat(page0.getContent())
-                .extracting(Product::getPrice)
-                .containsExactly(3);
-        assertThat(page0.getContent())
-                .extracting(Product::getImageUrl)
-                .containsExactly("http://exampleC.com/img.png");
-        assertThat(page0.isFirst()).isTrue();
-        assertThat(page0.hasPrevious()).isFalse();
-        assertThat(page0.hasNext()).isTrue();
+        // then — 메타데이터 검증 (공통값)
+        assertThat(page.getTotalElements()).isEqualTo(3);
+        assertThat(page.getTotalPages()).isEqualTo(3);
+        assertThat(page.getNumber()).isEqualTo(pageIndex);
+        assertThat(page.getSize()).isEqualTo(1);
 
-        // when — 두 번째 페이지 조회
-        Page<Product> page1 = productRepository.findAll(pageable.withPage(1));
+        // then — 콘텐츠 검증
+        assertThat(page.getContent())
+            .extracting(Product::getName)
+            .containsExactly(expectedName);
+        assertThat(page.getContent())
+            .extracting(Product::getPrice)
+            .containsExactly(expectedPrice);
+        assertThat(page.getContent())
+            .extracting(Product::getImageUrl)
+            .containsExactly(expectedImageUrl);
 
-        // then — 두 번째 페이지 콘텐츠 검증
-        assertThat(page1.getContent())
-                .extracting(Product::getName)
-                .containsExactly("B");
-        assertThat(page1.getContent())
-                .extracting(Product::getPrice)
-                .containsExactly(2);
-        assertThat(page1.getContent())
-                .extracting(Product::getImageUrl)
-                .containsExactly("http://exampleB.com/img.png");
-        assertThat(page1.hasPrevious()).isTrue();
-        assertThat(page1.hasNext()).isTrue();
-
-        // when — 마지막 페이지 조회
-        Page<Product> page2 = productRepository.findAll(pageable.withPage(2));
-
-        // then — 마지막 페이지 콘텐츠 검증
-        assertThat(page2.getContent())
-                .extracting(Product::getName)
-                .containsExactly("A");
-        assertThat(page2.getContent())
-                .extracting(Product::getPrice)
-                .containsExactly(1);
-        assertThat(page2.getContent())
-                .extracting(Product::getImageUrl)
-                .containsExactly("http://exampleA.com/img.png");
-        assertThat(page2.isLast()).isTrue();
-        assertThat(page2.hasPrevious()).isTrue();
-        assertThat(page2.hasNext()).isFalse();
+        // then — 네비게이션 플래그 검증
+        assertThat(page.isFirst()).isEqualTo(expectedFirst);
+        assertThat(page.hasPrevious()).isEqualTo(expectedPrev);
+        assertThat(page.hasNext()).isEqualTo(expectedNext);
     }
 }
