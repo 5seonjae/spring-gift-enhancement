@@ -8,6 +8,7 @@ import gift.entity.Product;
 import gift.repository.OptionRepository;
 import gift.repository.ProductRepository;
 import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -93,5 +94,32 @@ public class OptionRepositoryTest {
         assertThat(page).isEmpty();
         assertThat(page.getTotalElements()).isZero();
         assertThat(page.getTotalPages()).isZero();
+    }
+
+    @Test
+    @DisplayName("상품 ID + 옵션명으로 옵션을 조회")
+    void returnsSingleOption() {
+        optionRepository.saveAll(List.of(
+            new Option(product, "다크 초콜릿", 2),
+            new Option(product, "화이트 초콜릿", 3),
+            new Option(product, "아몬드 초콜릿", 4)
+        ));
+
+        Optional<Option> option =
+            optionRepository.findByProductIdAndOptionName(product.getId(), "화이트 초콜릿");
+
+        assertThat(option)
+            .isPresent()
+            .get()
+            .satisfies(o -> assertThat(o.getOptionQuantity()).isEqualTo(3));
+    }
+
+    @Test
+    @DisplayName("해당 조합이 없으면 Optional.empty()를 반환")
+    void returnsEmptyOptionalWhenNotExists() {
+        Optional<Option> option =
+            optionRepository.findByProductIdAndOptionName(product.getId(), "두바이 초콜릿");
+
+        assertThat(option).isNotPresent();
     }
 }

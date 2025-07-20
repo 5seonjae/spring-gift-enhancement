@@ -1,7 +1,13 @@
 package gift.service;
 
+import gift.dto.api.OptionRequestDto;
 import gift.dto.api.OptionResponseDto;
+import gift.entity.Option;
+import gift.entity.Product;
 import gift.repository.OptionRepository;
+import gift.repository.ProductRepository;
+import java.util.NoSuchElementException;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -12,14 +18,32 @@ import org.springframework.transaction.annotation.Transactional;
 public class OptionService {
 
     private final OptionRepository optionRepository;
+    private final ProductRepository productRepository;
 
-    public OptionService(OptionRepository optionRepository) {
+    public OptionService(OptionRepository optionRepository, ProductRepository productRepository) {
         this.optionRepository = optionRepository;
+        this.productRepository = productRepository;
     }
 
     public Page<OptionResponseDto> getOptionList(Long productId, Pageable pageable) {
         return optionRepository
             .findAllByProductId(productId, pageable)
             .map(OptionResponseDto::of);
+    }
+
+    public Option addOption(Long productId, OptionRequestDto optionRequestDto) {
+        Product product = productRepository.findById(productId)
+            .orElseThrow(() -> new NoSuchElementException("상품을 찾을 수 없습니다."));
+
+        optionRepository.findByProductIdAndOptionName(productId, optionRequestDto.getName())
+            .ifPresent(option -> {
+                throw new DuplicateKeyException("이미 존재하는 옵션입니다.");
+            });
+
+        return optionRepository.save(new Option(
+            product,
+            optionRequestDto.getName(),
+            optionRequestDto.getQuantity()
+        ));
     }
 }
