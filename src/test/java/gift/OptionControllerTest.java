@@ -237,7 +237,7 @@ public class OptionControllerTest {
         }
 
         @Test
-        @DisplayName("[API] 옵션 수정 성공 - 이름·수량 수정 → 201 Created + Location + Body")
+        @DisplayName("[API] 옵션 수정 성공 - 이름·수량 수정 → 200 Ok + Body")
         void update_success() throws Exception {
             var dto = new OptionRequestDto("아몬드 초콜릿", 7);
 
@@ -248,11 +248,7 @@ public class OptionControllerTest {
                 )
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsBytes(dto)))
-                .andExpect(status().isCreated())
-                .andExpect(header().string(
-                    "Location",
-                    "/api/products/"+product.getId()+"/options/"+option.getId()
-                ))
+                .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value("아몬드 초콜릿"))
                 .andExpect(jsonPath("$.quantity").value(7));
 

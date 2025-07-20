@@ -63,12 +63,9 @@ public class OptionController {
         @PathVariable Long optionId,
         @RequestBody @Valid OptionRequestDto optionRequestDto
     ) {
-        Option saved = optionService.updateOption(productId, optionId, optionRequestDto);
+        Option updated = optionService.updateOption(productId, optionId, optionRequestDto);
 
-        URI location = URI.create(
-            "/api/products/%d/options/%d".formatted(productId, saved.getId()));
-        return ResponseEntity.created(location)
-            .body(OptionResponseDto.of(saved));
+        return ResponseEntity.ok(OptionResponseDto.of(updated));
     }
 
     @PatchMapping("/{optionId}/subtract")
