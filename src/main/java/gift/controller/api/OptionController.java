@@ -4,6 +4,7 @@ import static org.springframework.data.domain.Sort.Direction.DESC;
 
 import gift.dto.api.OptionRequestDto;
 import gift.dto.api.OptionResponseDto;
+import gift.dto.api.OptionSubtractRequestDto;
 import gift.entity.Option;
 import gift.service.OptionService;
 import jakarta.validation.Valid;
@@ -14,6 +15,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -65,5 +67,14 @@ public class OptionController {
             "/api/products/%d/options/%d".formatted(productId, saved.getId()));
         return ResponseEntity.created(location)
             .body(OptionResponseDto.of(saved));
+    }
+
+    @PatchMapping("/{optionId}/subtract")
+    public ResponseEntity<Void> subtractOptionQuantity(
+        @PathVariable("optionId") Long optionId,
+        @RequestBody @Valid OptionSubtractRequestDto optionSubtractRequestDto
+    ) {
+        optionService.subtractQuantity(optionId, optionSubtractRequestDto.getQuantity());
+        return ResponseEntity.noContent().build();
     }
 }

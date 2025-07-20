@@ -2,6 +2,7 @@ package gift;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -10,6 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import gift.dto.api.OptionRequestDto;
+import gift.dto.api.OptionSubtractRequestDto;
 import gift.entity.Option;
 import gift.entity.Product;
 import gift.repository.OptionRepository;
@@ -462,6 +464,111 @@ public class OptionControllerTest {
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.error")
                     .value(otherOption.getOptionName() + " 옵션은 " + product.getName() + " 상품에 속하지 않습니다."));
+        }
+    }
+
+    @Nested
+    class SubtractQuantity {
+        Option option;
+
+        @BeforeEach
+        void initOption() {
+            option = optionRepository.save(new Option(product, "다크 초콜릿", 10));
+        }
+
+        @Test
+        @DisplayName("[API] 옵션 수량 감소 성공 - 204 No Content + 수량 감소")
+        void subtract_success() throws Exception {
+            var dto = new OptionSubtractRequestDto(3);
+
+            mockMvc.perform(patch(
+                    "/api/products/{productId}/options/{optionId}/subtract",
+                    product.getId(),
+                    option.getId()
+                )
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsBytes(dto)))
+                .andExpect(status().isNoContent());
+
+            assertThat(
+                optionRepository
+                    .findById(option.getId())
+                    .orElseThrow().getOptionQuantity()).isEqualTo(7);
+        }
+
+        @Test
+        @DisplayName("[API] 옵션 수량 감소 실패 - 수량 부족 409 Conflict")
+        void subtract_insufficient() throws Exception {
+            var dto = new OptionRequestDto("다크 초콜릿", 999);
+
+            mockMvc.perform(patch(
+                    "/api/products/{productId}/options/{optionId}/subtract",
+                    product.getId(),
+                    option.getId()
+                )
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsBytes(dto)))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.error")
+                    .value("재고가 부족합니다."));
+        }
+
+        @Test
+        @DisplayName("[API] 옵션 수량 감소 실패 - 수량 < 1 400 Bad Request")
+        void subtract_quantityZero() throws Exception {
+            var dto = new OptionRequestDto(
+                "다크 초콜릿",
+                -10
+            );
+
+            mockMvc.perform(patch(
+                    "/api/products/{productId}/options/{optionId}/subtract",
+                    product.getId(),
+                    option.getId()
+                )
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsBytes(dto)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.quantity")
+                    .value("수량은 1개 이상이어야 합니다."));
+        }
+
+        @Test
+        @DisplayName("[API] 옵션 수량 감소 실패 - 수량 > 1억 400 Bad Request")
+        void subtract_quantityTooLarge() throws Exception {
+            var dto = new OptionRequestDto(
+                "다크 초콜릿",
+                100_000_001
+            );
+
+            mockMvc.perform(patch(
+                    "/api/products/{productId}/options/{optionId}/subtract",
+                    product.getId(),
+                    option.getId()
+                )
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsBytes(dto)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.quantity")
+                    .value("수량은 1억 개 미만이어야 합니다."));
+        }
+
+        @Test @DisplayName("[API] 옵션 수량 감소 실패 - 수량에 문자를 넣는 경우 400 Bad Request")
+        void subtract_missingQuantity() throws Exception {
+            String badJson = "{"
+                + "\"quantity\": \"과자\","
+                + "}";
+
+            mockMvc.perform(patch(
+                    "/api/products/{productId}/options/{optionId}/subtract",
+                    product.getId(),
+                    option.getId()
+                )
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(badJson))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error")
+                    .value("'quantity' 필드는 Integer 형식이어야 합니다."));
         }
     }
 }

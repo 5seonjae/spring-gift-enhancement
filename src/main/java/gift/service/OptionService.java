@@ -75,4 +75,13 @@ public class OptionService {
 
         return optionRepository.save(updatedOption);
     }
+
+    public void subtractQuantity(Long optionId, int qty) {
+        Option option = optionRepository.findById(optionId)
+            .orElseThrow(() -> new NoSuchElementException("옵션을 찾을 수 없습니다."));
+
+        // 엔티티 내부에서 검증 & 차감
+        option.subtract(qty);
+        // Dirty Checking → 트랜잭션 종료 시 UPDATE
+    }
 }
