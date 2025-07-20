@@ -5,6 +5,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -569,6 +570,36 @@ public class OptionControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error")
                     .value("'quantity' 필드는 Integer 형식이어야 합니다."));
+        }
+    }
+
+    @Nested
+    class DeleteOption {
+        @Test
+        @DisplayName("[API] 옵션 제거 성공 - 204 No Content + removed")
+        void delete_success() throws Exception {
+            Option option = optionRepository.save(new Option(product, "다크 초콜릿", 10));
+
+            mockMvc.perform(delete(
+                    "/api/products/{productId}/options/{optionId}",
+                    product.getId(),
+                    option.getId())
+                )
+                .andExpect(status().isNoContent());
+
+            assertThat(optionRepository.findById(option.getId())).isNotPresent();
+        }
+
+        @Test
+        @DisplayName("[API] 옵션 제거 실패 - 존재하지 않는 옵션 404 Not Found")
+        void delete_notFound() throws Exception {
+            mockMvc.perform(delete(
+                    "/api/products/{productId}/options/{optionId}",
+                    product.getId(),
+                    999L)
+                )
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error").value("옵션을 찾을 수 없습니다."));
         }
     }
 }

@@ -84,4 +84,11 @@ public class OptionService {
         option.subtract(qty);
         // Dirty Checking → 트랜잭션 종료 시 UPDATE
     }
+
+    public void deleteOption(Long optionId) {
+        optionRepository.findById(optionId)
+            .orElseThrow(() -> new NoSuchElementException("옵션을 찾을 수 없습니다."));
+
+        optionRepository.deleteById(optionId);
+    }
 }
