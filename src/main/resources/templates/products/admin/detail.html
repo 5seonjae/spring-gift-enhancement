@@ -19,6 +19,18 @@
     </p>
   </div>
 
+  <h3>옵션 선택</h3>
+  <ul>
+    <li th:each="opt : ${options}">
+      <label>
+        <input type="radio" name="optionId" th:value="${opt.id}"
+               th:disabled="${opt.quantity == 0}" />
+        <span th:text="${opt.name}">6개</span>
+        <span th:text="${#numbers.formatInteger(opt.quantity, 0)} + '개 재고'"></span>
+      </label>
+    </li>
+  </ul>
+
   <div class="button-group">
     <a th:href="@{/admin/products}" class="button">← 목록으로</a>
     <a th:href="@{'/admin/products/' + ${product.id} + '/edit'}" class="button edit">✏️ 수정</a>
