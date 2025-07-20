@@ -56,18 +56,18 @@ public class OptionControllerTest {
     }
 
     @Test
-    @DisplayName("GET /api/products/{id}/options : 옵션 페이지 반환")
+    @DisplayName("GET /api/products/{id}/options : 옵션 배열 반환")
     void listOptions() throws Exception {
         optionRepository.save(new Option(product, "다크 초콜릿", 10));
         optionRepository.save(new Option(product, "화이트 초콜릿", 8));
 
         mockMvc.perform(get("/api/products/{productId}/options", product.getId()))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.content.length()").value(2))
-            .andExpect(jsonPath("$.content[0].name").value("화이트 초콜릿"))
-            .andExpect(jsonPath("$.content[0].quantity").value(8))
-            .andExpect(jsonPath("$.content[1].name").value("다크 초콜릿"))
-            .andExpect(jsonPath("$.content[1].quantity").value(10));
+            .andExpect(jsonPath("$.length()").value(2))
+            .andExpect(jsonPath("$[0].name").value("화이트 초콜릿"))
+            .andExpect(jsonPath("$[0].quantity").value(8))
+            .andExpect(jsonPath("$[1].name").value("다크 초콜릿"))
+            .andExpect(jsonPath("$[1].quantity").value(10));
     }
 
     @Nested

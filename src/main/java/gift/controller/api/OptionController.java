@@ -9,6 +9,7 @@ import gift.entity.Option;
 import gift.service.OptionService;
 import jakarta.validation.Valid;
 import java.net.URI;
+import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -35,11 +36,11 @@ public class OptionController {
     }
 
     @GetMapping
-    public ResponseEntity<Page<OptionResponseDto>> getAllOptions(
+    public ResponseEntity<List<OptionResponseDto>> getAllOptions(
         @PathVariable Long productId,
         @PageableDefault(size = 5, sort = "id", direction = DESC) Pageable pageable
     ) {
-        Page<OptionResponseDto> options = optionService.getOptionList(productId, pageable);
+        List<OptionResponseDto> options = optionService.getOptionList(productId, pageable).getContent();
         return new ResponseEntity<>(options, HttpStatus.OK);
     }
 
