@@ -14,3 +14,6 @@ INSERT INTO members (email, password, is_admin) VALUES ('6seonjae@gmail.com', '6
 INSERT INTO options (product_id, option_name, option_quantity) VALUES (1, '다크 초콜릿', 5);
 INSERT INTO options (product_id, option_name, option_quantity) VALUES (1, '화이트 초콜릿', 4);
 INSERT INTO options (product_id, option_name, option_quantity) VALUES (1, '아몬드 초콜릿', 3);
+INSERT INTO options (product_id, option_name, option_quantity) VALUES (1, '두바이 초콜릿', 5);
+INSERT INTO options (product_id, option_name, option_quantity) VALUES (1, '스위스 초콜릿', 4);
+INSERT INTO options (product_id, option_name, option_quantity) VALUES (1, '누텔라 초콜릿', 3);

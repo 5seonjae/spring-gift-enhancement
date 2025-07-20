@@ -83,14 +83,13 @@ public class AdminProductViewController {
     @GetMapping("/{id}")
     public String viewProductDetail(@PathVariable Long id,
         Model model,
-        RedirectAttributes ra,
-        @PageableDefault(size = 5, sort = "id", direction = DESC) Pageable pageable
+        RedirectAttributes ra
     ) {
         try {
             Product product = productService.getProductById(id);
-            Page<OptionResponseDto> options = optionService.getOptionList(id, pageable);
+            Page<OptionResponseDto> options = optionService.getOptionList(id, Pageable.unpaged());
             model.addAttribute("product", product);
-            model.addAttribute("options",  options);
+            model.addAttribute("options", options.getContent());
             return "products/admin/detail";
         } catch (NoSuchElementException e) {
             ra.addFlashAttribute("errorMsg", "상품을 찾을 수 없습니다.");

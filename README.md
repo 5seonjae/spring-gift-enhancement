@@ -111,7 +111,7 @@ CONSTRAINT fk_wish_product FOREIGN KEY (product_id) REFERENCES products(id)
 
 ### 🎯 기능 요구사항 체크리스트
 
-- [ ] **옵션 조회 API**
+- [x] **옵션 조회 API**
   - 엔드포인트:
     ```http
     GET /api/products/{productId}/options
@@ -130,17 +130,17 @@ CONSTRAINT fk_wish_product FOREIGN KEY (product_id) REFERENCES products(id)
         ...
       ]
       ```
-- [ ] **옵션 수량 차감 기능**
+- [x] **옵션 수량 차감 기능**
   - 서비스 계층 메서드(`OptionService.subtract`)로 구현
   - 별도의 HTTP API는 선택 사항
   - 재고(`quantity`)가 부족할 경우 예외 발생
-- [ ] **옵션 이름 제약**
+- [x] **옵션 이름 제약**
   - 공백 포함 **1~50자**
   - 허용 특수문자: `()`, `.`, `[`, `]`, `+`, `-`, `&`, `/`, `_`
   - 그 외 특수문자 사용 불가
-- [ ]**옵션 수량 제약**
+- [x] **옵션 수량 제약**
   - 최소 **1개 이상**, 최대 **1억 미만**
-- [ ]**중복 옵션 이름 금지**
+- [x] **중복 옵션 이름 금지**
   - 동일 상품 내에서 옵션 이름 중복 불허
 - [ ] **(선택) 관리자 화면에서 옵션 추가/삭제 UI 제공**
   - Thymeleaf 템플릿(`templates/products/optionForm.html`) + 뷰 컨트롤러 구현
