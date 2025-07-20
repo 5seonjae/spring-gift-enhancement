@@ -4,6 +4,7 @@ import gift.dto.api.OptionRequestDto;
 import gift.dto.api.OptionResponseDto;
 import gift.entity.Option;
 import gift.entity.Product;
+import gift.exception.OptionProductMismatchException;
 import gift.repository.OptionRepository;
 import gift.repository.ProductRepository;
 import java.util.NoSuchElementException;
@@ -45,5 +46,33 @@ public class OptionService {
             optionRequestDto.getName(),
             optionRequestDto.getQuantity()
         ));
+    }
+
+    public Option updateOption(Long productId, Long optionId, OptionRequestDto optionRequestDto) {
+        Product product = productRepository.findById(productId)
+            .orElseThrow(() -> new NoSuchElementException("상품을 찾을 수 없습니다."));
+
+        Option option = optionRepository.findById(optionId)
+            .orElseThrow(() -> new NoSuchElementException("옵션을 찾을 수 없습니다."));
+
+        if (option.getProduct().getId() != product.getId()) {
+            throw new OptionProductMismatchException(
+                option.getOptionName() + " 옵션은 " + product.getName() + " 상품에 속하지 않습니다."
+            );
+        }
+
+        optionRepository.findByProductIdAndOptionName(option.getProduct().getId(), optionRequestDto.getName())
+            .ifPresent(o -> {
+                throw new DuplicateKeyException("이미 존재하는 옵션입니다.");
+            });
+
+        Option updatedOption = new Option(
+            optionId,
+            option.getProduct(),
+            optionRequestDto.getName(),
+            optionRequestDto.getQuantity()
+        );
+
+        return optionRepository.save(updatedOption);
     }
 }
