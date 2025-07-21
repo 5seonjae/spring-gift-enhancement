@@ -13,5 +13,5 @@ public interface OptionRepository extends JpaRepository<Option, Long> {
     Page<Option> findAllByProductId(Long productId, Pageable pageable);
 
     @EntityGraph(attributePaths = "product")
-    Optional<Option> findByProductIdAndOptionName(Long productId, String optionName);
+    Optional<Option> findByProductIdAndName(Long productId, String optionName);
 }

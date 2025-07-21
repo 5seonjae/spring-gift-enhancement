@@ -37,7 +37,7 @@ public class OptionService {
         Product product = productRepository.findById(productId)
             .orElseThrow(() -> new NoSuchElementException("상품을 찾을 수 없습니다."));
 
-        optionRepository.findByProductIdAndOptionName(productId, optionRequestDto.getName())
+        optionRepository.findByProductIdAndName(productId, optionRequestDto.getName())
             .ifPresent(option -> {
                 throw new DuplicateKeyException("이미 존재하는 옵션입니다.");
             });
@@ -55,11 +55,11 @@ public class OptionService {
 
         if (!option.belongsTo(productId)) {
             throw new OptionProductMismatchException(
-                    option.getOptionName() + " 옵션은 " + option.getProduct().getName() + " 상품에 속하지 않습니다."
+                    option.getName() + " 옵션은 " + option.getProduct().getName() + " 상품에 속하지 않습니다."
             );
         }
 
-        optionRepository.findByProductIdAndOptionName(option.getProduct().getId(), optionRequestDto.getName())
+        optionRepository.findByProductIdAndName(option.getProduct().getId(), optionRequestDto.getName())
             .ifPresent(o -> {
                 throw new DuplicateKeyException("이미 존재하는 옵션입니다.");
             });

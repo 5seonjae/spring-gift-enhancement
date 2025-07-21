@@ -22,8 +22,8 @@ public record OptionResponseDto (
     public static OptionResponseDto of(Option option) {
         return new OptionResponseDto(
             option.getId(),
-            option.getOptionName(),
-            option.getOptionQuantity()
+            option.getName(),
+            option.getQuantity()
         );
     }
 }

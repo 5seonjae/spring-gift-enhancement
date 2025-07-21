@@ -26,19 +26,19 @@ public class Option {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "option_name", nullable = false, length = 50, unique = true)
+    @Column(nullable = false, length = 50, unique = true)
     @NotBlank(message = "옵션 이름은 필수입니다.")
     @Size(max = 50, message = "최대 50자까지 가능합니다.")
     @Pattern(
         regexp = "^[a-zA-Z0-9가-힣()\\[\\]+\\-&/_ ]*$",
         message = "유효한 특수문자 ( '( )', '[ ]', '+', '-', '&', '/', '_' ) 가 아닙니다."
     )
-    private String optionName;
+    private String name;
 
-    @Column(name = "option_quantity", nullable = false)
+    @Column(nullable = false)
     @Min(value = 1, message = "수량은 1개 이상이어야 합니다.")
     @Max(value = 100_000_000, message = "수량은 1억 개 미만이어야 합니다.")
-    private int optionQuantity;
+    private int quantity;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "product_id")
@@ -46,11 +46,11 @@ public class Option {
 
     protected Option() {}
 
-    public Option(Long id, Product product, String optionName, int optionQuantity) {
+    public Option(Long id, Product product, String name, int quantity) {
         this.id = id;
         this.product = product;
-        this.optionName = optionName;
-        this.optionQuantity = optionQuantity;
+        this.name = name;
+        this.quantity = quantity;
     }
 
     public Option(Product product, String name, int quantity) {
@@ -61,26 +61,26 @@ public class Option {
         return id;
     }
 
-    public String getOptionName() {
-        return optionName;
+    public String getName() {
+        return name;
     }
 
-    public int getOptionQuantity() {
-        return optionQuantity;
+    public int getQuantity() {
+        return quantity;
     }
 
     public Product getProduct() {
         return product;
     }
 
-    public void subtract(int optionQuantity) {
-        if (optionQuantity <= 0) {
+    public void subtract(int quantity) {
+        if (quantity <= 0) {
             throw new IllegalArgumentException("차감 수량은 1 이상이어야 합니다.");
         }
-        if (optionQuantity > this.optionQuantity) {
+        if (quantity > this.quantity) {
             throw new InsufficientStockException("재고가 부족합니다.");
         }
-        this.optionQuantity -= optionQuantity;
+        this.quantity -= quantity;
     }
 
     public boolean belongsTo(Long productId) {

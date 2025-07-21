@@ -80,7 +80,7 @@ public class OptionRepositoryTest {
         // then ─ 콘텐츠 검증
         assertThat(page.getContent())
             .hasSize(1)
-            .extracting(Option::getOptionName, Option::getOptionQuantity)
+            .extracting(Option::getName, Option::getQuantity)
             .containsExactly(tuple(expectedOptionName, expectedOptionQty));
     }
 
@@ -106,19 +106,19 @@ public class OptionRepositoryTest {
         ));
 
         Optional<Option> option =
-            optionRepository.findByProductIdAndOptionName(product.getId(), "화이트 초콜릿");
+            optionRepository.findByProductIdAndName(product.getId(), "화이트 초콜릿");
 
         assertThat(option)
             .isPresent()
             .get()
-            .satisfies(o -> assertThat(o.getOptionQuantity()).isEqualTo(3));
+            .satisfies(o -> assertThat(o.getQuantity()).isEqualTo(3));
     }
 
     @Test
     @DisplayName("해당 조합이 없으면 Optional.empty()를 반환")
     void returnsEmptyOptionalWhenNotExists() {
         Optional<Option> option =
-            optionRepository.findByProductIdAndOptionName(product.getId(), "두바이 초콜릿");
+            optionRepository.findByProductIdAndName(product.getId(), "두바이 초콜릿");
 
         assertThat(option).isNotPresent();
     }

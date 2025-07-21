@@ -90,7 +90,7 @@ public class OptionControllerTest {
                 .andExpect(jsonPath("$.name").value(dto.getName()))
                 .andExpect(jsonPath("$.quantity").value(dto.getQuantity()));
 
-            assertThat(optionRepository.findByProductIdAndOptionName(product.getId(),
+            assertThat(optionRepository.findByProductIdAndName(product.getId(),
                 "다크 초콜릿")).isPresent();
         }
 
@@ -253,8 +253,8 @@ public class OptionControllerTest {
                 .andExpect(jsonPath("$.quantity").value(7));
 
             Option changed = optionRepository.findById(option.getId()).orElseThrow();
-            assertThat(changed.getOptionName()).isEqualTo("아몬드 초콜릿");
-            assertThat(changed.getOptionQuantity()).isEqualTo(7);
+            assertThat(changed.getName()).isEqualTo("아몬드 초콜릿");
+            assertThat(changed.getQuantity()).isEqualTo(7);
         }
 
         @Test
@@ -460,7 +460,7 @@ public class OptionControllerTest {
                     .content(objectMapper.writeValueAsBytes(dto)))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.error")
-                    .value(otherOption.getOptionName() + " 옵션은 " + product.getName() + " 상품에 속하지 않습니다."));
+                    .value(otherOption.getName() + " 옵션은 " + product.getName() + " 상품에 속하지 않습니다."));
         }
     }
 
@@ -490,7 +490,7 @@ public class OptionControllerTest {
             assertThat(
                 optionRepository
                     .findById(option.getId())
-                    .orElseThrow().getOptionQuantity()).isEqualTo(7);
+                    .orElseThrow().getQuantity()).isEqualTo(7);
         }
 
         @Test
