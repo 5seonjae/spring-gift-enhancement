@@ -29,6 +29,7 @@ public class WishService {
         this.productRepository = productRepository;
     }
 
+    @Transactional(readOnly = true)
     public Page<WishResponseDto> getWishListForMember(Member member, Pageable pageable) {
         validateMember(member);
         return wishRepository

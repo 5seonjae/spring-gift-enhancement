@@ -26,6 +26,7 @@ public class OptionService {
         this.productRepository = productRepository;
     }
 
+    @Transactional(readOnly = true)
     public Page<OptionResponseDto> getOptionList(Long productId, Pageable pageable) {
         return optionRepository
             .findAllByProductId(productId, pageable)
