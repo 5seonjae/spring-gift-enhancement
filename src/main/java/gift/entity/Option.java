@@ -16,6 +16,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
+import java.util.Objects;
+
 @Entity
 @Table(name = "options")
 public class Option {
@@ -79,5 +81,9 @@ public class Option {
             throw new InsufficientStockException("재고가 부족합니다.");
         }
         this.optionQuantity -= optionQuantity;
+    }
+
+    public boolean belongsTo(Long productId) {
+        return Objects.equals(this.product.getId(), productId);
     }
 }

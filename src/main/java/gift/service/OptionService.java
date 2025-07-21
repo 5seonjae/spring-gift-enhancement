@@ -49,15 +49,12 @@ public class OptionService {
     }
 
     public Option updateOption(Long productId, Long optionId, OptionRequestDto optionRequestDto) {
-        Product product = productRepository.findById(productId)
-            .orElseThrow(() -> new NoSuchElementException("상품을 찾을 수 없습니다."));
-
         Option option = optionRepository.findById(optionId)
             .orElseThrow(() -> new NoSuchElementException("옵션을 찾을 수 없습니다."));
 
-        if (option.getProduct().getId() != product.getId()) {
+        if (!option.belongsTo(productId)) {
             throw new OptionProductMismatchException(
-                option.getOptionName() + " 옵션은 " + product.getName() + " 상품에 속하지 않습니다."
+                    option.getOptionName() + " 옵션은 " + option.getProduct().getName() + " 상품에 속하지 않습니다."
             );
         }
 
