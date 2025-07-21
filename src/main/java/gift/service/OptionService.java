@@ -54,9 +54,11 @@ public class OptionService {
             .orElseThrow(() -> new NoSuchElementException("옵션을 찾을 수 없습니다."));
 
         if (!option.belongsTo(productId)) {
+            Product otherProduct = productRepository.findById(productId)
+                .orElseThrow(() -> new NoSuchElementException("상품을 찾을 수 없습니다."));
+
             throw new OptionProductMismatchException(
-                    option.getName() + " 옵션은 " + option.getProduct().getName() + " 상품에 속하지 않습니다."
-            );
+                option.getName() + " 옵션은 " + otherProduct.getName() + " 상품에 속하지 않습니다.");
         }
 
         optionRepository.findByProductIdAndName(option.getProduct().getId(), optionRequestDto.getName())
